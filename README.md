@@ -35,6 +35,7 @@ You can recreate this file by running:
 
 ```bash
 python -m src.training.supervised_pretrain --build-dataset
+```
 
 ## Video Links
 - Demo Video: TBA
