@@ -31,7 +31,7 @@ env/
 .ipynb_checkpoints/
 
 ########################################
-# ML PROJECT DATA
+# DATA
 ########################################
 # Raw PGN files from Lichess
 data/raw/
