@@ -10,6 +10,32 @@ Through additional levels of depth and comprehensive training/testing, this bot 
 - `python -m src.train_rl`
 - `python -m src.play_human` --> tbd on these
 
+## Raw Lichess PGN
+
+We use a subset of the Lichess game database for supervised pretraining.
+
+- Source: https://database.lichess.org/
+- Example file used:
+  - `lichess_db_standard_rated_2025-01.pgn`
+
+Place the downloaded PGN in:
+
+- `data/raw/lichess/lichess_db_standard_rated_2025-01.pgn`
+
+This file is **not committed** to the repository due to size.
+
+## Processed Data
+
+We convert PGN -> (position, move) tensors and save them as:
+
+- `data/processed/supervised_train.npz`
+- Shape: `X: (N, 12, 8, 8)`; `y: (N,)`
+
+You can recreate this file by running:
+
+```bash
+python -m src.training.supervised_pretrain --build-dataset
+
 ## Video Links
 - Demo Video: TBA
 - Technical Walkthrough: TBA
