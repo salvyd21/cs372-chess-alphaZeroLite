@@ -1,0 +1,73 @@
+########################################
+# PYTHON ARTIFACTS
+########################################
+__pycache__/
+*.py[cod]
+*.so
+
+# Packaging
+*.egg
+*.egg-info/
+dist/
+build/
+pip-wheel-metadata/
+
+# Environments
+.env
+.venv/
+venv/
+env/
+
+########################################
+# EDITOR / OS ARTIFACTS
+########################################
+.DS_Store
+.vscode/
+.idea/
+
+########################################
+# NOTEBOOKS (Optional — remove if you want to track)
+########################################
+.ipynb_checkpoints/
+
+########################################
+# ML PROJECT DATA
+########################################
+# Raw PGN files from Lichess
+data/raw/
+# Processed training tensors
+data/processed/
+# Temporary extracted FENs / samples
+data/cache/
+
+########################################
+# MODEL ARTIFACTS
+########################################
+checkpoints/
+models/
+*.pt
+*.pth
+*.ckpt
+
+########################################
+# LOGGING / TRAINING OUTPUTS
+########################################
+logs/
+wandb/
+tensorboard/
+runs/
+
+########################################
+# RESULTS / PLOTS
+########################################
+results/
+figures/
+plots/
+
+########################################
+# CONFIG / CREDENTIALS (DO NOT COMMIT TOKENS)
+########################################
+*.pem
+*.key
+*.token
+*.secret
