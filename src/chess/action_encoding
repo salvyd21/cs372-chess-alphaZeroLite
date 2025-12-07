@@ -1,0 +1,44 @@
+import chess
+import numpy as np
+## Alpha-Zero style action encoding with the 8x8 dimension board and 73 action planes consisting of 
+## "sliding" moves, knight moves, and promotion actions.
+# 8 sliding directions: up/down/left/right + diagonals (from White POV)
+SLIDING_DIRS = [
+    ( 1,  0),  # 0: up
+    (-1,  0),  # 1: down
+    ( 0,  1),  # 2: right
+    ( 0, -1),  # 3: left
+    ( 1,  1),  # 4: up-right
+    ( 1, -1),  # 5: up-left
+    (-1,  1),  # 6: down-right
+    (-1, -1),  # 7: down-left
+]
+
+# Knight moves (dr, df), White POV
+KNIGHT_DIRS = [
+    ( 2,  1),
+    ( 1,  2),
+    (-1,  2),
+    (-2,  1),
+    (-2, -1),
+    (-1, -2),
+    ( 1, -2),
+    ( 2, -1),
+]
+
+# Underpromotion directions from White POV:
+# forward, capture-left, capture-right
+PROMO_DIRS = [
+    (1, 0),   # forward
+    (1, -1),  # capture-left
+    (1, 1),   # capture-right
+]
+
+# Underpromotion piece types (Queen promotion uses sliding planes)
+PROMO_PIECES = [chess.KNIGHT, chess.BISHOP, chess.ROOK]
+
+NUM_SLIDING   = 8 * 7        # 56
+NUM_KNIGHT    = 8            # 8
+NUM_UNDERPROMO = 3 * 3       # 9
+ACTION_PLANES = NUM_SLIDING + NUM_KNIGHT + NUM_UNDERPROMO  # 73
+ACTION_SIZE   = 8 * 8 * ACTION_PLANES                      # 4672
