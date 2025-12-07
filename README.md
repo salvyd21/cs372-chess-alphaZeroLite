@@ -18,11 +18,11 @@ We use a subset of the Lichess game database for supervised pretraining.
 - Example file used:
   - `lichess_db_standard_rated_2025-01.pgn`
 
-Place the downloaded PGN in:
+Placed the downloaded PGN in:
 
 - `data/raw/lichess/lichess_db_standard_rated_2025-01.pgn`
 
-This file is **not committed** to the repository due to size.
+This file is **not committed** to the repository due to size (~30 GiB).
 
 ## Processed Data
 
