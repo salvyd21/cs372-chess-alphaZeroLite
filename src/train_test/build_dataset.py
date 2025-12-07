@@ -158,7 +158,7 @@ def main():
         "--pgn",
         type=str,
         required=True,
-        help="Path to PGN file (e.g. data/raw/lichess/lichess_db.pgn)",
+        help="Path to PGN file (e.g. data/raw/lichess/lichess_db_standard_rated_2025-01.pgn)",
     )
     parser.add_argument(
         "--max_games",
