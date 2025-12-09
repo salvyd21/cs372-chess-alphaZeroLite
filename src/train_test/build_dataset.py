@@ -8,9 +8,7 @@ import chess.pgn
 from tqdm import tqdm
 
 
-# -----------------------------
 # CONFIG
-# -----------------------------
 
 PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP,
                chess.ROOK, chess.QUEEN, chess.KING]
@@ -27,9 +25,7 @@ NUM_PROMOS = len(PROMO_MAP)  # 5
 ACTION_SIZE = 64 * 64 * NUM_PROMOS  # 20480
 
 
-# -----------------------------
 # ENCODING FUNCTIONS
-# -----------------------------
 
 def board_to_tensor(board: chess.Board) -> np.ndarray:
     """
@@ -43,7 +39,7 @@ def board_to_tensor(board: chess.Board) -> np.ndarray:
         for pt_idx, piece_type in enumerate(PIECE_TYPES):
             channel = color_idx * 6 + pt_idx
             for square in board.pieces(piece_type, color):
-                rank = 7 - chess.square_rank(square)  # rank 0 at top
+                rank = 7 - chess.square_rank(square)  # rank 0 = the top
                 file = chess.square_file(square)      # file 0 = 'a'
                 planes[channel, rank, file] = 1.0
 
@@ -57,9 +53,7 @@ def move_to_index(move: chess.Move) -> int:
     return from_sq * 64 * NUM_PROMOS + to_sq * NUM_PROMOS + promo_id
 
 
-# -----------------------------
-# PGN → EXAMPLES
-# -----------------------------
+# Turning PGN into examples
 
 def pgn_to_examples(
     pgn_path: Path,
@@ -123,9 +117,7 @@ def pgn_to_examples(
     return X, y
 
 
-# -----------------------------
 # TRAIN/VAL/TEST SPLIT
-# -----------------------------
 
 def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     assert X.shape[0] == y.shape[0]
@@ -148,9 +140,7 @@ def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     )
 
 
-# -----------------------------
-# MAIN
-# -----------------------------
+# Main Driver
 
 def main():
     parser = argparse.ArgumentParser()
