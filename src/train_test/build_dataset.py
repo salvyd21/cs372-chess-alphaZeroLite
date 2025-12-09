@@ -8,32 +8,10 @@ import chess.pgn
 from tqdm import tqdm
 
 from chess.action_encoding import ACTION_SIZE, encode_move_index
-
-# If you already have a shared state_encoding.py, import board_to_tensor from there.
-# Otherwise you can keep this 12-plane encoding here (but it's fine as-is).
+from chess.state_encoding import board_to_tensor
 
 PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP,
                chess.ROOK, chess.QUEEN, chess.KING]
-
-
-def board_to_tensor(board: chess.Board) -> np.ndarray:
-    """
-    Encode board as (12, 8, 8) float32.
-    Channel order:
-    [WP, WN, WB, WR, WQ, WK, BP, BN, BB, BR, BQ, BK]
-    """
-    planes = np.zeros((12, 8, 8), dtype=np.float32)
-
-    for color_idx, color in enumerate([chess.WHITE, chess.BLACK]):
-        for pt_idx, piece_type in enumerate(PIECE_TYPES):
-            channel = color_idx * 6 + pt_idx
-            for square in board.pieces(piece_type, color):
-                # rank 0 at top (from White's POV)
-                rank = 7 - chess.square_rank(square)
-                file = chess.square_file(square)
-                planes[channel, rank, file] = 1.0
-
-    return planes
 
 
 # -----------------------------
