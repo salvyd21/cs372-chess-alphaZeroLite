@@ -1,3 +1,4 @@
+#built off the skeleton /core/Game.py from the general AlphaZero framework
 import numpy as np
 import chess
 from .action_encoding import (
