@@ -34,55 +34,59 @@ class NNetWrapper(NeuralNet):
 
     def train(self, examples):
         """
-        examples: list of (canonicalBoard, pi, v)
+        examples: list of (board, pi, v) tuples
         """
-        optimizer = self.optimizer
+        from tqdm import tqdm
         
+        optimizer = optim.Adam(self.nnet.parameters(), lr=self.args['lr'])
+
         for epoch in range(self.args['epochs']):
-            print(f'Epoch {epoch + 1}/{self.args["epochs"]}')
+            print(f'EPOCH ::: {epoch + 1}')
             self.nnet.train()
-            
+            pi_losses = []
+            v_losses = []
+
             batch_count = int(len(examples) / self.args['batch_size'])
-            
-            # Use tqdm for a progress bar
-            t = tqdm.range(batch_count), desc='Training Net'
+
+            t = tqdm(range(batch_count), desc='Training Net')
             for _ in t:
-                # 1. Sample a batch
                 sample_ids = np.random.randint(len(examples), size=self.args['batch_size'])
                 boards, pis, vs = list(zip(*[examples[i] for i in sample_ids]))
                 
-                # 2. Convert boards to tensors
-                # We assume training examples might already be tensors (from supervised loader)
-                # or raw boards. If raw, we convert them.
+                # Handle both numpy arrays and chess.Board objects
                 if isinstance(boards[0], np.ndarray) and len(boards[0].shape) == 3:
-                     # Already encoded (12, 8, 8)
-                    board_tensors = torch.FloatTensor(np.array(boards).astype(np.float64))
+                    # Already encoded (12, 8, 8)
+                    board_tensors = torch.FloatTensor(np.array(boards).astype(np.float32))
                 else:
                     # Need conversion (if passed raw board objects)
-                    board_tensors = torch.FloatTensor(np.array([board_to_tensor(b) for b in boards]).astype(np.float64))
-
-                target_pis = torch.FloatTensor(np.array(pis))
-                target_vs = torch.FloatTensor(np.array(vs).astype(np.float64))
-
-                # Move to GPU
-                if self.args['cuda']:
-                    board_tensors = board_tensors.contiguous().to(self.device)
-                    target_pis = target_pis.contiguous().to(self.device)
-                    target_vs = target_vs.contiguous().to(self.device)
-
-                # 3. Compute Output & Loss
-                out_pi, out_v = self.nnet(board_tensors)
+                    board_tensors = torch.FloatTensor(np.array([board_to_tensor(b) for b in boards]).astype(np.float32))
                 
-                l_pi = -torch.sum(target_pis * out_pi) / target_pis.size()[0]
-                l_v = torch.sum((target_vs - out_v.view(-1)) ** 2) / target_vs.size()[0]
+                target_pis = torch.FloatTensor(np.array(pis))
+                target_vs = torch.FloatTensor(np.array(vs).astype(np.float32))
+
+                # Move to device
+                board_tensors = board_tensors.to(self.device)
+                target_pis = target_pis.to(self.device)
+                target_vs = target_vs.to(self.device)
+
+                # Forward pass
+                out_pi, out_v = self.nnet(board_tensors)
+                l_pi = self.loss_pi(target_pis, out_pi)
+                l_v = self.loss_v(target_vs, out_v)
                 total_loss = l_pi + l_v
 
-                # 4. Backprop
+                # Backward pass
                 optimizer.zero_grad()
                 total_loss.backward()
                 optimizer.step()
-                
-                t.set_postfix(Loss_PI=l_pi.item(), Loss_V=l_v.item())
+
+                # Record loss
+                pi_losses.append(l_pi.item())
+                v_losses.append(l_v.item())
+                t.set_postfix(Loss_pi=l_pi.item(), Loss_v=l_v.item())
+
+            print(f'Policy Loss: {np.mean(pi_losses):.4f}')
+            print(f'Value Loss: {np.mean(v_losses):.4f}')
 
     def predict(self, canonicalBoard):
         """

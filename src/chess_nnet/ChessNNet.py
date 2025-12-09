@@ -4,7 +4,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import os
 import numpy as np
-from src.chess_engine.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 
 class ChessResNet(nn.Module):
     def __init__(self, game, args):
