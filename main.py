@@ -7,7 +7,7 @@ import torch.nn as nn
 
 from chess.ChessGame import ChessGame
 from chess_nnet.NNetWrapper import NNetWrapper
-from chess.action_encoding_az import ACTION_SIZE
+from chess.action_encoding import ACTION_SIZE
 
 # Args / Config
 
