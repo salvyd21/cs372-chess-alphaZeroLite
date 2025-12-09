@@ -1,6 +1,10 @@
 from core.NeuralNet import NeuralNet
 from chess.state_encoding import board_to_tensor
 from .ChessNNet import ChessNNet
+import torch
+import tqdm
+import torch.optim as optim
+import numpy as np
 
 
 class NNetWrapper(NeuralNet):
