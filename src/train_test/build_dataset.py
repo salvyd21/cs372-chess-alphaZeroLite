@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 import argparse
+import io
 
 import numpy as np
 import chess
@@ -74,7 +75,16 @@ def pgn_to_examples(
     y = []
 
     print(f"Reading PGN from: {pgn_path}")
-    with open(pgn_path, "r", encoding="utf-8") as f:
+    # Support plain .pgn and compressed .pgn.zst
+    if str(pgn_path).endswith(".zst"):
+        import zstandard as zstd
+        fh = open(pgn_path, "rb")
+        dctx = zstd.ZstdDecompressor()
+        stream_reader = dctx.stream_reader(fh)
+        f = io.TextIOWrapper(stream_reader, encoding="utf-8")
+    else:
+        f = open(pgn_path, "r", encoding="utf-8")
+    with f:
         game_count = 0
 
         while True:
