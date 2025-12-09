@@ -89,8 +89,16 @@ class NNetWrapper(NeuralNet):
         Returns: pi (policy vector), v (value)
         """
         # 1. Prepare input
-        # Use the imported helper function to encode state
-        board_tensor = board_to_tensor(canonicalBoard)
+        # 1. Prepare input — handle both chess.Board and numpy arrays
+        if isinstance(canonicalBoard, np.ndarray) and len(canonicalBoard.shape) == 3:
+        # Already encoded as (12, 8, 8)
+            board_tensor = canonicalBoard.astype(np.float32)
+        else:
+        # Raw board object — encode it
+            board_tensor = board_to_tensor(canonicalBoard).astype(np.float32)
+    
+    # Convert to Torch Tensor and add Batch Dimension
+        board_tensor = torch.FloatTensor(board_tensor)
         
         # Convert to Torch Tensor and add Batch Dimension
         board_tensor = torch.FloatTensor(board_tensor.astype(np.float32))

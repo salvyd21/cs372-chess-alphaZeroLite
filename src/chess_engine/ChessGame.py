@@ -133,15 +133,9 @@ class ChessGame:
         b = board.copy()
 
         if player == 1:
-            # Ensure it's White to move in canonical representation
-            b.turn = chess.WHITE
             return b
         else:
-            # Mirror: swap colors, flip orientation, flip which side moves
-            b = b.mirror()
-            # Ensure white moves in the canonical form
-            b.turn = chess.WHITE
-            return b
+            return b.mirror()
 
     def getSymmetries(self, board, pi):
         """
