@@ -92,11 +92,11 @@ class NNetWrapper(NeuralNet):
         board_tensor = board_to_tensor(canonicalBoard)
         
         # Convert to Torch Tensor and add Batch Dimension
-        board_tensor = torch.FloatTensor(board_tensor.astype(np.float64))
+        board_tensor = torch.FloatTensor(board_tensor.astype(np.float32))
         if self.args['cuda']:
             board_tensor = board_tensor.contiguous().to(self.device)
             
-        board_tensor = board_tensor.view(1, -1, self.board_x, self.board_y)
+        board_tensor = board_tensor.unsqueeze(0)  # Add batch dimension
         
         # 2. Inference
         self.nnet.eval()

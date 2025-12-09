@@ -6,6 +6,7 @@ from .action_encoding import (
     encode_move_index,
     decode_move_index,
 )
+from .state_encoding import board_to_tensor
 
 
 class ChessGame:
@@ -16,7 +17,6 @@ class ChessGame:
     Player: +1 or -1
       - In canonical form, +1 is always "white to move" from current player's POV.
     """
-
     def __init__(self):
         pass
 
@@ -84,9 +84,12 @@ class ChessGame:
         valid_moves = np.zeros(self.getActionSize(), dtype=np.uint8)
 
         for move in canon_b.legal_moves:
-            idx = encode_move_index(canon_b, move)
-            valid_moves[idx] = 1
-
+            try:
+                idx = encode_move_index(canon_b, move)
+                valid_moves[idx] = 1
+            except ValueError:
+                # Skip moves that can't be encoded (shouldn't happen)
+                pass
         return valid_moves
 
     # Game termination

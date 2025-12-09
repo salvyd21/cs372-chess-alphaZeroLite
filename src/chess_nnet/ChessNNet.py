@@ -32,7 +32,7 @@ class ChessResNet(nn.Module):
         
         # Policy Head
         self.policy_conv = nn.Sequential(
-            nn.Conv2d(num_channels, 2, kernel_size=1),
+            nn.Conv2d(self.num_channels, 2, kernel_size=1),
             nn.BatchNorm2d(2),
             nn.ReLU()
         )
@@ -40,7 +40,7 @@ class ChessResNet(nn.Module):
         
         # Value Head
         self.value_conv = nn.Sequential(
-            nn.Conv2d(num_channels, 1, kernel_size=1),
+            nn.Conv2d(self.num_channels, 1, kernel_size=1),
             nn.BatchNorm2d(1),
             nn.ReLU()
         )
