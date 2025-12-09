@@ -7,8 +7,8 @@ import chess
 import chess.pgn
 from tqdm import tqdm
 
-from chess.action_encoding import ACTION_SIZE, encode_move_index
-from chess.state_encoding import board_to_tensor
+from src.chess.action_encoding import ACTION_SIZE, encode_move_index
+from src.chess.state_encoding import board_to_tensor
 
 PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP,
                chess.ROOK, chess.QUEEN, chess.KING]
