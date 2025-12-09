@@ -7,10 +7,7 @@ import chess
 import chess.pgn
 from tqdm import tqdm
 
-from chess.action_encoding import (
-    ACTION_SIZE,         # should be 8 * 8 * 73 = 4672
-    encode_move_index,   # encode_move_index(canonical_board, move) -> [0..ACTION_SIZE)
-)
+from chess.action_encoding import ACTION_SIZE, encode_move_index
 
 # If you already have a shared state_encoding.py, import board_to_tensor from there.
 # Otherwise you can keep this 12-plane encoding here (but it's fine as-is).
