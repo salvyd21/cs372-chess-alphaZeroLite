@@ -32,7 +32,7 @@ class Args:
 
     # --- device ---
     use_gpu = True
-    device = "cuda"      # or "mps" on Apple Silicon
+    device = "cuda"      # or "cpu" if unavailable
     num_workers = 4
 
     # --- paths ---
@@ -41,7 +41,7 @@ class Args:
     test_npz  = "data/processed/supervised_test.npz"
     models_dir = "models"
 
-# Simple Dataset for supervised training on NPZ
+# Dataset for supervised training on NPZ
 
 class ChessMoveDataset(Dataset):
     """

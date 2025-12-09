@@ -1,7 +1,7 @@
 # play.py (Simple example)
 from chess.ChessGame import ChessGame
-from chess.pytorch.NNet import NNetWrapper as NNet
-from mcts.MCTS import MCTS
+from chess_nnet import NNetWrapper as NNet
+from core.MCTS import MCTS
 import numpy as np
 
 game = ChessGame()
