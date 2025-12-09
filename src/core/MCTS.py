@@ -41,14 +41,15 @@ class MCTS():
         if temp == 0:
             bestAs = np.array(np.argwhere(counts == np.max(counts))).flatten()
             bestA = np.random.choice(bestAs)
-            probs = [0] * len(counts)
+            probs = np.zeros(self.game.getActionSize(), dtype=np.float32)  # ← Use numpy array
             probs[bestA] = 1
             return probs
 
-        counts = [x ** (1. / temp) for x in counts]
-        counts_sum = float(sum(counts))
-        probs = [x / counts_sum for x in counts]
-        return probs
+        counts = np.array(counts, dtype=np.float32)  # ← Convert to numpy
+        counts = counts ** (1. / temp)
+        counts_sum = float(np.sum(counts))
+        probs = counts / counts_sum
+        return probs  # ← Now returns numpy array
 
 
     def search(self, canonicalBoard):

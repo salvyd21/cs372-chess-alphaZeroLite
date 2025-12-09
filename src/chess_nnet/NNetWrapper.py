@@ -109,10 +109,13 @@ class NNetWrapper(NeuralNet):
         # 3. Inference
         self.nnet.eval()
         with torch.no_grad():
-            pi, v = self.nnet(board_tensor)
+            log_pi, v = self.nnet(board_tensor)
+            pi = torch.exp(log_pi)  # Convert log probabilities to probabilities
 
         # 4. Return results
-        return pi.cpu().data.numpy()[0], v.cpu().data.numpy()[0]
+        pi_np = pi.cpu().numpy()[0]
+        v_np = v.cpu().numpy()[0]  # Extract scalar from array
+        return pi_np, float(v_np)  # Ensure v is a float
 
     def save_checkpoint(self, folder='models', filename='checkpoint.pth.tar'):
         filepath = os.path.join(folder, filename)
