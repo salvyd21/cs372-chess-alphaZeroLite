@@ -48,7 +48,7 @@ def main():
     
     try:
         # Create training arguments
-        args = Args()
+        args = ArgsAlphaZero()
         log.info(f"Training config:")
         log.info(f"  - MCTS Simulations per move: {args.numMCTSSims}")
         log.info(f"  - Training iterations: {args.numIters}")
