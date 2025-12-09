@@ -227,11 +227,11 @@ def legal_move_mask(board: chess.Board, device="cpu"):
             pass
     return mask
 
-# Example usage:
-logits = policy_head_output  # shape (4672,)
-mask = legal_move_mask(board, logits.device)
-logits = logits.clone()
-logits[~mask] = -1e9
-probs = torch.softmax(logits, dim=-1)
-idx = torch.argmax(probs).item()
-chosen_move = decode_move_index(board, idx)
+# # Example usage:
+# logits = policy_head_output  # shape (4672,)
+# mask = legal_move_mask(board, logits.device)
+# logits = logits.clone()
+# logits[~mask] = -1e9
+# probs = torch.softmax(logits, dim=-1)
+# idx = torch.argmax(probs).item()
+# chosen_move = decode_move_index(board, idx)
