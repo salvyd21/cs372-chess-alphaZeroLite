@@ -88,11 +88,7 @@ class NNetWrapper(NeuralNet):
         board: canonical board (chess.Board OR numpy array (12,8,8))
         Returns: pi (policy vector), v (value)
         """
-        import chess
-        import numpy as np
-        import torch
-        
-        # 1. Prepare input — handle both chess.Board and numpy arrays
+        # 1. Prepare input — handle both cases chess.Board or numpy arrays
         if isinstance(canonicalBoard, np.ndarray):
             # Already encoded as (12, 8, 8)
             board_tensor = canonicalBoard.astype(np.float32)
