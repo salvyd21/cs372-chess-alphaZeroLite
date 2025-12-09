@@ -6,6 +6,7 @@ import tqdm
 import torch.optim as optim
 import numpy as np
 import os
+import chess
 
 
 class NNetWrapper(NeuralNet):
