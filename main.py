@@ -5,9 +5,9 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 
-from chess.ChessGame import ChessGame
-from chess_nnet.NNetWrapper import NNetWrapper
-from chess.action_encoding import ACTION_SIZE
+from src.chess.ChessGame import ChessGame
+from src.chess_nnet.NNetWrapper import NNetWrapper
+from src.chess.action_encoding import ACTION_SIZE
 
 # Args / Config
 
@@ -27,6 +27,8 @@ class Args:
     epochs = 10
     policy_loss_weight = 1.0
     value_loss_weight = 1.0
+    dropout = 0.3
+    l2 = 1e-4
 
     # --- device ---
     use_gpu = True
