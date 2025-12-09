@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from core.Coach import Coach
-from core.args import Args
+from core.args import ArgsAlphaZero
 from chess_nnet.NNetWrapper import NNetWrapper
 from envs.chess_coach import GymCoachAdapter
 
