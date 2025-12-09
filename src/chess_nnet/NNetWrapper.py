@@ -44,7 +44,7 @@ class NNetWrapper(NeuralNet):
             batch_count = int(len(examples) / self.args['batch_size'])
             
             # Use tqdm for a progress bar
-            t = tqdm(range(batch_count), desc='Training Net')
+            t = tqdm.range(batch_count), desc='Training Net'
             for _ in t:
                 # 1. Sample a batch
                 sample_ids = np.random.randint(len(examples), size=self.args['batch_size'])
@@ -85,33 +85,33 @@ class NNetWrapper(NeuralNet):
 
     def predict(self, canonicalBoard):
         """
-        board: canonical board
+        board: canonical board (chess.Board OR numpy array (12,8,8))
         Returns: pi (policy vector), v (value)
         """
-        # 1. Prepare input
-        # 1. Prepare input — handle both chess.Board and numpy arrays
-        if isinstance(canonicalBoard, np.ndarray) and len(canonicalBoard.shape) == 3:
-        # Already encoded as (12, 8, 8)
-            board_tensor = canonicalBoard.astype(np.float32)
-        else:
-        # Raw board object — encode it
-            board_tensor = board_to_tensor(canonicalBoard).astype(np.float32)
-    
-          
-        # Convert to Torch Tensor and add Batch Dimension
-        board_tensor = torch.FloatTensor(board_tensor.astype(np.float32))
-        if self.args['cuda']:
-            board_tensor = board_tensor.contiguous().to(self.device)
-            
-        board_tensor = board_tensor.unsqueeze(0)  # Add batch dimension
+        import chess
+        import numpy as np
+        import torch
         
-        # 2. Inference
+        # 1. Prepare input — handle both chess.Board and numpy arrays
+        if isinstance(canonicalBoard, np.ndarray):
+            # Already encoded as (12, 8, 8)
+            board_tensor = canonicalBoard.astype(np.float32)
+        elif isinstance(canonicalBoard, chess.Board):
+            # Raw board object — encode it
+            board_tensor = board_to_tensor(canonicalBoard).astype(np.float32)
+        else:
+            raise TypeError(f"Expected chess.Board or numpy array, got {type(canonicalBoard)}")
+    
+        # 2. Convert to Torch and add batch dimension
+        board_tensor = torch.FloatTensor(board_tensor).unsqueeze(0).to(self.device)
+        
+        # 3. Inference
         self.nnet.eval()
         with torch.no_grad():
             pi, v = self.nnet(board_tensor)
 
-        # 3. Return results
-        return torch.exp(pi).data.cpu().numpy()[0], v.data.cpu().numpy()[0]
+        # 4. Return results
+        return pi.cpu().data.numpy()[0], v.cpu().data.numpy()[0]
 
     def save_checkpoint(self, folder='models', filename='checkpoint.pth.tar'):
         filepath = os.path.join(folder, filename)
