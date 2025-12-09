@@ -1,11 +1,7 @@
 #built off the skeleton /core/Game.py from the general AlphaZero framework
-import numpy as np
 import chess
-from .action_encoding import (
-    ACTION_SIZE,
-    encode_move_index,
-    decode_move_index,
-)
+import numpy as np
+from .action_encoding import ACTION_SIZE
 from .state_encoding import board_to_tensor
 
 
@@ -23,100 +19,81 @@ class ChessGame:
     # Basic game info; board size and action size
 
     def getInitBoard(self):
-        """Return initial board state."""
+        """Return initial chess board as chess.Board object"""
         return chess.Board()
 
     def getBoardSize(self):
-        """Return board spatial dimensions (x, y)."""
+        """Return (width, height) of the board"""
         return (8, 8)
 
     def getActionSize(self):
-        """Total number of possible actions in the flat action space."""
+        """Return number of possible actions"""
         return ACTION_SIZE
 
     # State transitions
 
     def getNextState(self, board, player, action):
         """
-        Given a board (not necessarily canonical), a player (+1/-1),
-        and an action index, return (next_board, next_player).
+        Execute action on board and return new board & next player.
 
-        For MCTS, this will typically be called with:
-          - board = canonicalBoard (from getCanonicalForm)
-          - player = 1
+        Args:
+            board: chess.Board object
+            player: 1 (White) or -1 (Black)
+            action: integer action index
+
+        Returns:
+            (new_board, next_player)
         """
-        # Work on a copy to avoid side effects
-        b = board.copy()
+        from .action_encoding import decode_move_index
 
-        # Decode action as a move on the canonical view of this player
-        # Canonical view means player == 1 (White)-> board as-is, player == -1 (Black)-> mirrored
-        canon_b = self.getCanonicalForm(b, player)
-        move = decode_move_index(canon_b, action)
-
-        if move not in canon_b.legal_moves:
-            raise ValueError(f"Decoded illegal move {move} from action {action}")
-
-        canon_b.push(move)
-
-        # Now we need to convert canon_b back to a "neutral" board
-        # where pieces/colors are in normal coordinates and the side to move is correct
-        next_player = -player
-
-        if next_player == 1:
-            # Player +1 is the one to move; canonical board already has +1 as White
-            next_board = canon_b
-        else:
-            # Player -1 is to move; we invert canonicalization:
-            # getCanonicalForm(board, -1) = board.mirror()
-            # so original board = canon_b.mirror()
-            next_board = canon_b.mirror()
-
-        return next_board, next_player
+        move = decode_move_index(board, action)
+        board.push(move)
+        return board, -player
 
     # Valid moves
 
     def getValidMoves(self, board, player):
         """
-        Return a binary vector of length ACTION_SIZE indicating valid moves.
-        Uses the canonical view of (board, player).
-        """
-        canon_b = self.getCanonicalForm(board, player)
-        valid_moves = np.zeros(self.getActionSize(), dtype=np.uint8)
+        Return numpy array of valid move indices.
 
-        for move in canon_b.legal_moves:
-            try:
-                idx = encode_move_index(canon_b, move)
-                valid_moves[idx] = 1
-            except ValueError:
-                # Skip moves that can't be encoded (shouldn't happen)
-                pass
+        Args:
+            board: chess.Board object
+            player: 1 or -1 (unused in chess, all moves valid regardless)
+
+        Returns:
+            numpy array of shape (ACTION_SIZE,) with 1.0 for valid moves, 0.0 else
+        """
+        from .action_encoding import encode_move_index
+
+        valid_moves = np.zeros(ACTION_SIZE, dtype=np.float32)
+        for move in board.legal_moves:
+            action_idx = encode_move_index(board, move)
+            if action_idx is not None:
+                valid_moves[action_idx] = 1.0
         return valid_moves
 
     # Game termination
 
     def getGameEnded(self, board, player):
         """
+        Check if game is over and return result.
+
         Returns:
-            0       if game not ended
-            +1      if 'player' has won
-            -1      if 'player' has lost
-            small val   (1e-4) if draw
-
-        We use canonical form so 'player' is always white to move.
+            0 if game ongoing
+            1 if player won
+            -1 if player lost
+            0.5 if draw (but return as 0 for simplicity)
         """
-        canon_b = self.getCanonicalForm(board, player)
-
-        if not canon_b.is_game_over():
+        if not board.is_game_over():
             return 0
 
-        result = canon_b.result()  # "1-0", "0-1", or "1/2-1/2"
-        if result == "1-0":
-            return 1 # 'Player' (White) Wins
-        elif result == "0-1":
-            return -1 # 'Player' (White) Loses -> Black Wins
+        # Game is over
+        if board.is_checkmate():
+            # Current player is checkmated, so they lose
+            return -1 if board.turn == (player == 1) else 1
         else:
-            return 1e-4  # Draw
-
+            # Draw
+            return 0
 
     # Canonical form & symmetries
 
@@ -124,30 +101,16 @@ class ChessGame:
         """
         Return canonical form of the board from the POV of 'player'.
 
-        - If player == +1: board should represent them as White.
-        - If player == -1: we mirror the board so that, from the POV of
-          the current player, they look like White.
-
-        In all cases, canonical board has white-to-move.
+        - If player == +1: board as-is (White's perspective)
+        - If player == -1: mirror the board (Black's perspective becomes White's)
         """
-        b = board.copy()
-
         if player == 1:
-            return b
+            return board
         else:
-            return b.mirror()
-
-    def getSymmetries(self, board, pi):
-        """
-        Data augmentation. For now: identity only.
-        You could add flips/rotations if you also transform pi accordingly.
-        """
-        return [(board, pi)]
+            return board.mirror()
 
     # String representation (for MCTS hashing)
 
     def stringRepresentation(self, board):
-        """
-        Return a unique, hashable string for a board state.
-        """
+        """Return FEN string representation of board"""
         return board.fen()

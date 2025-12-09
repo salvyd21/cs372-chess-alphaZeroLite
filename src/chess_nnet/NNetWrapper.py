@@ -97,9 +97,7 @@ class NNetWrapper(NeuralNet):
         # Raw board object — encode it
             board_tensor = board_to_tensor(canonicalBoard).astype(np.float32)
     
-    # Convert to Torch Tensor and add Batch Dimension
-        board_tensor = torch.FloatTensor(board_tensor)
-        
+          
         # Convert to Torch Tensor and add Batch Dimension
         board_tensor = torch.FloatTensor(board_tensor.astype(np.float32))
         if self.args['cuda']:
