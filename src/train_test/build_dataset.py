@@ -7,8 +7,7 @@ import chess
 import chess.pgn
 from tqdm import tqdm
 
-# IMPORTANT: use your AlphaZero-style encoding module
-from chess.action_encoding_az import (
+from chess.action_encoding import (
     ACTION_SIZE,         # should be 8 * 8 * 73 = 4672
     encode_move_index,   # encode_move_index(canonical_board, move) -> [0..ACTION_SIZE)
 )
