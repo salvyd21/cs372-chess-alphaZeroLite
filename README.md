@@ -22,7 +22,7 @@ Placed the downloaded PGN in:
 
 - `data/raw/lichess/lichess_db_standard_rated_2025-01.pgn`
 
-This file is **not committed** to the repository due to size (~30 GiB).
+This file is **not committed** instead compressed as .zst to the repository due to original size (~30 GiB).
 
 ## Processed Data
 
@@ -34,7 +34,7 @@ We convert PGN -> (position, move) tensors and save them as:
 You can recreate this file by running:
 
 ```bash
-python -m src.training.supervised_pretrain --build-dataset
+python -m src.train_test.supervised_pretrain --build-dataset
 ```
 
 ## Video Links
