@@ -13,7 +13,7 @@ class ChessResNet(nn.Module):
         
         # Extract params from the args dictionary
         self.num_res_blocks = args.get('num_res_blocks', 5) # Default to 5 if missing
-        self.num_channels = args.get('num_channels', 256)   # Default to 256 if missing
+        self.num_channels = args.get('num_channels', 128)   # Default to 128 if missing
         
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()
