@@ -7,25 +7,18 @@ import chess
 import chess.pgn
 from tqdm import tqdm
 
+# IMPORTANT: use your AlphaZero-style encoding module
+from chess.action_encoding_az import (
+    ACTION_SIZE,         # should be 8 * 8 * 73 = 4672
+    encode_move_index,   # encode_move_index(canonical_board, move) -> [0..ACTION_SIZE)
+)
 
-# CONFIG
+# If you already have a shared state_encoding.py, import board_to_tensor from there.
+# Otherwise you can keep this 12-plane encoding here (but it's fine as-is).
 
 PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP,
                chess.ROOK, chess.QUEEN, chess.KING]
 
-# (from_square, to_square, promotion) encoding
-PROMO_MAP = {
-    None: 0,
-    chess.KNIGHT: 1,
-    chess.BISHOP: 2,
-    chess.ROOK: 3,
-    chess.QUEEN: 4,
-}
-NUM_PROMOS = len(PROMO_MAP)  # 5
-ACTION_SIZE = 64 * 64 * NUM_PROMOS  # 20480
-
-
-# ENCODING FUNCTIONS
 
 def board_to_tensor(board: chess.Board) -> np.ndarray:
     """
@@ -39,21 +32,53 @@ def board_to_tensor(board: chess.Board) -> np.ndarray:
         for pt_idx, piece_type in enumerate(PIECE_TYPES):
             channel = color_idx * 6 + pt_idx
             for square in board.pieces(piece_type, color):
-                rank = 7 - chess.square_rank(square)  # rank 0 = the top
-                file = chess.square_file(square)      # file 0 = 'a'
+                # rank 0 at top (from White's POV)
+                rank = 7 - chess.square_rank(square)
+                file = chess.square_file(square)
                 planes[channel, rank, file] = 1.0
 
     return planes
 
 
-def move_to_index(move: chess.Move) -> int:
-    from_sq = move.from_square
-    to_sq = move.to_square
-    promo_id = PROMO_MAP.get(move.promotion, 0)
-    return from_sq * 64 * NUM_PROMOS + to_sq * NUM_PROMOS + promo_id
+# -----------------------------
+# CANONICALIZATION HELPERS
+# -----------------------------
+
+def canonicalize_board_and_move(board: chess.Board, move: chess.Move):
+    """
+    Convert (board, move) into canonical form where the side to move is always "white"
+    and the position matches the perspective your AlphaZero encoding expects.
+
+    Convention (matching typical AlphaZero-style canonicalization):
+      - If it's White to move in the original board:
+            canonical_board = board.copy(), canonical_move = move
+      - If it's Black to move:
+            canonical_board = board.mirror()
+            canonical_move = the mirrored version of `move`
+
+    This must be consistent with how your ChessGame.getCanonicalForm()
+    and encode_move_index() expect the board.
+    """
+    if board.turn == chess.WHITE:
+        # Already white to move; no change
+        return board.copy(), move
+
+    # Black to move: mirror the board so that "current player" looks like white
+    mirrored_board = board.copy().mirror()
+
+    # Mirror the move's from/to squares.
+    # python-chess uses square indices 0..63; square_mirror flips ranks.
+    from_sq_m = chess.square_mirror(move.from_square)
+    to_sq_m = chess.square_mirror(move.to_square)
+
+    canonical_move = chess.Move(from_sq_m, to_sq_m, promotion=move.promotion)
+
+    return mirrored_board, canonical_move
 
 
-# Turning PGN into examples
+# -----------------------------
+# PGN → EXAMPLES
+# -----------------------------
 
 def pgn_to_examples(
     pgn_path: Path,
@@ -64,8 +89,12 @@ def pgn_to_examples(
     """
     Convert a PGN file into (X, y):
 
-    X: (N, 12, 8, 8) float32
-    y: (N,) int64 action indices
+    X: (N, 12, 8, 8) float32 board tensors (canonical, side to move = white)
+    y: (N,) int64 action indices in [0, ACTION_SIZE)
+
+    The action indices are produced via encode_move_index(canonical_board, canonical_move),
+    where canonical_board & canonical_move are transformed so that the side to move
+    is always "white" and coordinates match your AlphaZero encoding logic.
     """
     X = []
     y = []
@@ -91,13 +120,17 @@ def pgn_to_examples(
             moves = []
 
             for ply_idx, move in enumerate(game.mainline_moves()):
-                # Optional: subsample moves (e.g., every 2nd or 3rd)
+                # Optional: subsample moves
                 if ply_idx % sample_every_n_moves != 0:
                     board.push(move)
                     continue
 
-                positions.append(board.copy())
-                moves.append(move)
+                # board is the position BEFORE `move`
+                # Convert to canonical (side to move as white) and canonical move.
+                canon_board, canon_move = canonicalize_board_and_move(board, move)
+                positions.append(canon_board)
+                moves.append(canon_move)
+
                 board.push(move)
 
             # Limit positions per game to control dataset size
@@ -108,16 +141,21 @@ def pgn_to_examples(
                 moves = [moves[i] for i in idxs]
 
             for board_pos, move in zip(positions, moves):
+                # Board -> tensor
                 X.append(board_to_tensor(board_pos))
-                y.append(move_to_index(move))
+                # Move -> AlphaZero-style index (0..ACTION_SIZE-1)
+                idx = encode_move_index(board_pos, move)
+                y.append(idx)
 
     X = np.stack(X) if X else np.empty((0, 12, 8, 8), dtype=np.float32)
     y = np.array(y, dtype=np.int64)
-    print(f"Total examples: {len(y)}")
+    print(f"Total examples: {len(y)} (ACTION_SIZE = {ACTION_SIZE})")
     return X, y
 
 
+# -----------------------------
 # TRAIN/VAL/TEST SPLIT
+# -----------------------------
 
 def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     assert X.shape[0] == y.shape[0]
@@ -129,9 +167,9 @@ def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     train_end = int(n * train_ratio)
     val_end = int(n * (train_ratio + val_ratio))
 
-    train_idx = indices[:train_end] # 60% training
-    val_idx = indices[train_end:val_end] # 20% validation
-    test_idx = indices[val_end:] # 20% testing
+    train_idx = indices[:train_end]          # 60% training
+    val_idx = indices[train_end:val_end]     # 20% validation
+    test_idx = indices[val_end:]             # 20% testing
 
     return (
         X[train_idx], y[train_idx],
@@ -140,7 +178,9 @@ def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     )
 
 
-# Main Driver
+# -----------------------------
+# MAIN
+# -----------------------------
 
 def main():
     parser = argparse.ArgumentParser()
@@ -194,8 +234,8 @@ def main():
     X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(X, y)
 
     np.savez_compressed(out_dir / "supervised_train.npz", X=X_train, y=y_train)
-    np.savez_compressed(out_dir / "supervised_val.npz", X=X_val, y=y_val)
-    np.savez_compressed(out_dir / "supervised_test.npz", X=X_test, y=y_test)
+    np.savez_compressed(out_dir / "supervised_val.npz",   X=X_val,   y=y_val)
+    np.savez_compressed(out_dir / "supervised_test.npz",  X=X_test,  y=y_test)
 
     print("Saved:")
     print(f"  train -> {out_dir / 'supervised_train.npz'} ({X_train.shape[0]} examples)")
