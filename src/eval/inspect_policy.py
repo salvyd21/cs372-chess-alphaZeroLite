@@ -2,9 +2,9 @@ import argparse
 import numpy as np
 import chess
 
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from chess_nnet.NNetWrapper import NNetWrapper
-from chess.action_encoding_az import encode_move_index
+from chess_engine.action_encoding_az import encode_move_index
 
 def main():
     parser = argparse.ArgumentParser()

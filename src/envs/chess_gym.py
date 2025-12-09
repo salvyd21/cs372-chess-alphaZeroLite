@@ -1,8 +1,8 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-from chess.ChessGame import ChessGame
-from chess.state_encoding import board_to_tensor
+from chess_engine.ChessGame import ChessGame
+from chess_engine.state_encoding import board_to_tensor
 
 class GymChessEnv(gym.Env):
     """

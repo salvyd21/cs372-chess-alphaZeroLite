@@ -5,7 +5,7 @@ import io
 
 import numpy as np
 import chess
-import chess.pgn
+import chess_engine.pgn
 from tqdm import tqdm
 
 from src.chess.action_encoding import ACTION_SIZE, encode_move_index

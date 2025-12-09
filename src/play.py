@@ -1,5 +1,5 @@
 # play.py (Simple example)
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from chess_nnet import NNetWrapper as NNet
 from core.MCTS import MCTS
 import numpy as np

@@ -1,5 +1,5 @@
 from core.NeuralNet import NeuralNet
-from chess.state_encoding import board_to_tensor
+from chess_engine.state_encoding import board_to_tensor
 from .ChessNNet import ChessNNet
 import torch
 import tqdm

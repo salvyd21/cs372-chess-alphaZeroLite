@@ -2,7 +2,7 @@ import argparse
 import random
 import chess
 
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from chess_nnet.NNetWrapper import NNetWrapper
 from core.MCTS import MCTS
 

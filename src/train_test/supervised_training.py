@@ -1,8 +1,8 @@
 sys.path.append(os.getcwd())
 
-from chess.pytorch.ChessNNet import ChessResNet
+from chess_engine.pytorch.ChessNNet import ChessResNet
 # Import your game class to get dimensions
-from chess.ChessGame import ChessGame 
+from chess_engine.ChessGame import ChessGame 
 
 class ChessMoveDataset(Dataset):
     def __init__(self, filepath):

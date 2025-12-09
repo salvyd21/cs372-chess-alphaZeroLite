@@ -1,5 +1,5 @@
 from core.Coach import Coach
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from chess_nnet.NNetWrapper import NNetWrapper
 
 def main():

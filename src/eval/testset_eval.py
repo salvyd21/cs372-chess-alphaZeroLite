@@ -3,9 +3,9 @@ import numpy as np
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from chess_nnet.NNetWrapper import NNetWrapper
-from chess.action_encoding import ACTION_SIZE
+from chess_engine.action_encoding import ACTION_SIZE
 
 class ChessTestDataset(Dataset):
     def __init__(self, npz_path):

@@ -1,6 +1,6 @@
 from typing import Any, List, Tuple
 from envs.chess_gym import GymChessEnv
-from chess.ChessGame import ChessGame
+from chess_engine.ChessGame import ChessGame
 from core.Coach import Coach
 
 class GymCoachAdapter:
