@@ -1,6 +1,6 @@
 from core.NeuralNet import NeuralNet
 from chess_engine.state_encoding import board_to_tensor
-from .ChessNNet import ChessNNet
+from .ChessNNet import ChessResNet
 import torch
 import tqdm
 import torch.optim as optim
@@ -25,7 +25,7 @@ class NNetWrapper(NeuralNet):
         self.device = torch.device('cuda' if self.args['cuda'] else 'cpu')
         
         # Initialize the architecture with the args
-        self.nnet = ChessNNet(game, self.args).to(self.device)
+        self.nnet = ChessResNet(game, self.args).to(self.device)
         
         self.board_x, self.board_y = game.getBoardSize()
         self.action_size = game.getActionSize()

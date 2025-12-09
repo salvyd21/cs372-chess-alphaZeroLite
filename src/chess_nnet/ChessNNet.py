@@ -7,7 +7,6 @@ import os
 import numpy as np
 
 class ChessResNet(nn.Module):
-    # ------------------ CHANGE STARTS HERE ------------------
     def __init__(self, game, args):
         super(ChessResNet, self).__init__()
         
