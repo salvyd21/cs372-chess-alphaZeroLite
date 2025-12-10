@@ -47,7 +47,7 @@ Note: The raw PGN file is not committed to the repository due to size (~30 GiB).
 
 ### Processed Datasets
 
-We convert PGN games into tensors for representation:
+We convert PGN games (~50k) into tensors for representation:
 
 - **Training set**: `data/processed/supervised_train.npz`
 - **Validation set**: `data/processed/supervised_val.npz`
