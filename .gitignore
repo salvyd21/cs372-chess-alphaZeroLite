@@ -25,7 +25,6 @@ data/processed/
 # MODEL ARTIFACTS
 ########################################
 checkpoints/
-models/
 *.pt
 *.pth
 *.ckpt
