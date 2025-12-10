@@ -1,4 +1,4 @@
-# run python src/eval/tournament_eval.py --model_dir " " --opponent_types stockfish greedy random --stockfish_path " " --output_dir data/eval
+# run python src/eval/tournament_eval.py --model_dir " " --opponent_types stockfish greedy random --stockfish_path ""C:\Users\salva\.jupyter\baseline\stockfish\stockfish-windows-x86-64-avx2.exe"" --output_dir data/eval
 # in terminal to generate this file and execute evaluation on all model types
 import argparse
 import sys
