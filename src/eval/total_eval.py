@@ -1,3 +1,5 @@
+# run python src/eval/tournament_eval.py --model_dir " " --opponent_types stockfish greedy random --stockfish_path " " --output_dir data/eval
+# in terminal to generate this file and execute evaluation on all model types
 import argparse
 import sys
 from pathlib import Path
