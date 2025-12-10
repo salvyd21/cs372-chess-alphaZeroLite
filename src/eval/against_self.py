@@ -27,25 +27,22 @@ def play_one_game(game, nnet1, nnet2, args, verbose=False):
         if verbose:
             print(board)
 
-        if player == 1:
-            canonical_board = game.getCanonicalForm(board, 1)
-            pi = mcts1.getActionProb(canonical_board, temp=0)
-            action = int(max(range(len(pi)), key=lambda a: pi[a]))
-            board, player = game.getNextState(board, player, action)
-        else:
-            canonical_board = game.getCanonicalForm(board, 1)
-            pi = mcts2.getActionProb(canonical_board, temp=0)
-            action = int(max(range(len(pi)), key=lambda a: pi[a]))
-            board, player = game.getNextState(board, player, action)
+        current_nnet = nnet1 if player == 1 else nnet2
+        current_mcts = mcts1 if player == 1 else mcts2
+
+        canonical_board = game.getCanonicalForm(board, player)
+        pi = current_mcts.getActionProb(canonical_board, temp=0)
+        action = int(max(range(len(pi)), key=lambda a: pi[a]))
+        board, player = game.getNextState(board, player, action)
 
         if board.is_game_over():
             result = board.result()
             if result == "1-0":
-                return 1
+                return 1 # Model A (White) wins
             elif result == "0-1":
-                return -1
+                return -1 # Model B (Black) wins
             else:
-                return 0
+                return 0 # Draw
 
 def main():
     parser = argparse.ArgumentParser()
@@ -80,3 +77,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
