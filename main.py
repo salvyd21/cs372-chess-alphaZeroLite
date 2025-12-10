@@ -5,35 +5,21 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn as nn
 
-from src.chess.ChessGame import ChessGame
+from src.chess_engine.ChessGame import ChessGame
 from src.chess_nnet.NNetWrapper import NNetWrapper
-from src.chess.action_encoding import ACTION_SIZE
+from src.chess_engine.action_encoding import ACTION_SIZE
 
 # Args / Config
 
 class Args:
-    # --- model architecture ---
-    num_channels = 128
-    num_resBlocks = 5
-    policy_channels = 32
-    value_channels = 32
-    dropout = 0.1
-    use_batchnorm = True
-
-    # --- training ---
+    # --- training hyperparameters ---
     batch_size = 256
-    lr = 1e-3
-    weight_decay = 1e-4
     epochs = 10
-    policy_loss_weight = 1.0
-    value_loss_weight = 1.0
-    dropout = 0.3
-    l2 = 1e-4
+    num_workers = 4
 
     # --- device ---
     use_gpu = True
     device = "cuda"      # or "cpu" if unavailable
-    num_workers = 4
 
     # --- paths ---
     train_npz = "data/processed/supervised_train.npz"
@@ -76,12 +62,11 @@ def train_supervised(args: Args, checkpoint_name: str):
     print("Using device:", device)
 
     game = ChessGame()
-    nnet = NNetWrapper(game, args)
+    nnet = NNetWrapper(game)  # NNetWrapper manages its own args
     nnet.device = device
     nnet.nnet.to(device)
 
-    # optimizer (already created in NNetWrapper.__init__ typically,
-    # but we can override lr/weight_decay if needed)
+    # Use the optimizer from NNetWrapper
     optimizer = nnet.optimizer
 
     # Datasets
