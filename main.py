@@ -216,7 +216,7 @@ def main():
                         help="Checkpoint filename inside models/")
 
     args_cli = parser.parse_args()
-    args = Args()   # you could also load from a config file
+    args = Args() 
 
     if args_cli.mode == "train":
         train_supervised(args, checkpoint_name=args_cli.checkpoint)

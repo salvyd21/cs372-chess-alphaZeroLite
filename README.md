@@ -1,7 +1,7 @@
 # CS 372 Chess RL Agent: AlphaZero-Lite
 
 ## What it Does
-This project trains a chess-playing AI using supervised learning on human games and reinforcement learning with MCTS (Monte Carlo Tree Search). The system implements an architecture adhering to the traditional AlphaZero style with:
+This project trains a chess-playing AI agent using supervised learning on human games and reinforcement learning with MCTS (Monte Carlo Tree Search). The system implements an architecture adhering to the traditional AlphaZero style with:
 - **Supervised pretraining** on Lichess master games
 - **Neural network** with ResNet architecture (5 residual blocks, 128 channels)
 - **Policy and value heads** for move prediction and position evaluation
