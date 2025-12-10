@@ -25,3 +25,6 @@ ipykernel>=6.25.0
 
 #GPU Support
 torch==2.1.0+cu118  # For CUDA 11.8
+
+#Gym Environment
+gym>=0.26.0
