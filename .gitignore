@@ -45,3 +45,11 @@ checkpoints/
 __pycache__/
 data/raw/
 models/
+
+*.pgn
+*.zst
+*.npz
+*.pth
+__pycache__/
+data/raw/
+models/
