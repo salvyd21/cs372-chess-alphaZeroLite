@@ -1,7 +1,14 @@
 import os
+import sys
 from pathlib import Path
 import argparse
 import io
+
+# Add project root to sys.path to allow imports from src
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.abspath(os.path.join(current_dir, "../../"))
+if project_root not in sys.path:
+    sys.path.append(project_root)
 
 import numpy as np
 import chess
@@ -20,32 +27,12 @@ PIECE_TYPES = [chess.PAWN, chess.KNIGHT, chess.BISHOP,
 # -----------------------------
 
 def canonicalize_board_and_move(board: chess.Board, move: chess.Move):
-    """
-    Convert (board, move) into canonical form where the side to move is always "white"
-    and the position matches the perspective your AlphaZero encoding expects.
-
-    Convention (matching typical AlphaZero-style canonicalization):
-      - If it's White to move in the original board:
-            canonical_board = board.copy(), canonical_move = move
-      - If it's Black to move:
-            canonical_board = board.mirror()
-            canonical_move = the mirrored version of `move`
-
-    This must be consistent with how your ChessGame.getCanonicalForm()
-    and encode_move_index() expect the board.
-    """
     if board.turn == chess.WHITE:
-        # Already white to move; no change
         return board.copy(), move
 
-    # Black to move: mirror the board so that "current player" looks like white
     mirrored_board = board.copy().mirror()
-
-    # Mirror the move's from/to squares.
-    # python-chess uses square indices 0..63; square_mirror flips ranks.
     from_sq_m = chess.square_mirror(move.from_square)
     to_sq_m = chess.square_mirror(move.to_square)
-
     canonical_move = chess.Move(from_sq_m, to_sq_m, promotion=move.promotion)
 
     return mirrored_board, canonical_move
@@ -61,21 +48,10 @@ def pgn_to_examples(
     max_positions_per_game: int = 30,
     sample_every_n_moves: int = 1,
 ) -> tuple[np.ndarray, np.ndarray]:
-    """
-    Convert a PGN file into (X, y):
-
-    X: (N, 12, 8, 8) float32 board tensors (canonical, side to move = white)
-    y: (N,) int64 action indices in [0, ACTION_SIZE)
-
-    The action indices are produced via encode_move_index(canonical_board, canonical_move),
-    where canonical_board & canonical_move are transformed so that the side to move
-    is always "white" and coordinates match your AlphaZero encoding logic.
-    """
     X = []
     y = []
 
     print(f"Reading PGN from: {pgn_path}")
-    # Support plain .pgn and compressed .pgn.zst
     if str(pgn_path).endswith(".zst"):
         import zstandard as zstd
         fh = open(pgn_path, "rb")
@@ -88,48 +64,47 @@ def pgn_to_examples(
         game_count = 0
 
         while True:
-            game = chess.pgn.read_game(f)
-            if game is None:
-                break  # EOF
+            try:
+                game = chess.pgn.read_game(f)
+                if game is None:
+                    break  # EOF
 
-            game_count += 1
-            if max_games is not None and game_count > max_games:
-                break
+                game_count += 1
+                if max_games is not None and game_count > max_games:
+                    break
 
-            if game_count % 1000 == 0:
-                print(f"Processed {game_count} games...")
+                if game_count % 1000 == 0:
+                    print(f"Processed {game_count} games...")
 
-            board = game.board()
-            positions = []
-            moves = []
+                board = game.board()
+                positions = []
+                moves = []
 
-            for ply_idx, move in enumerate(game.mainline_moves()):
-                # Optional: subsample moves
-                if ply_idx % sample_every_n_moves != 0:
+                for ply_idx, move in enumerate(game.mainline_moves()):
+                    if ply_idx % sample_every_n_moves != 0:
+                        board.push(move)
+                        continue
+
+                    canon_board, canon_move = canonicalize_board_and_move(board, move)
+                    positions.append(canon_board)
+                    moves.append(canon_move)
+
                     board.push(move)
-                    continue
 
-                # board is the position BEFORE `move`
-                # Convert to canonical (side to move as white) and canonical move.
-                canon_board, canon_move = canonicalize_board_and_move(board, move)
-                positions.append(canon_board)
-                moves.append(canon_move)
+                if len(positions) > max_positions_per_game:
+                    idxs = np.linspace(0, len(positions) - 1,
+                                       max_positions_per_game, dtype=int)
+                    positions = [positions[i] for i in idxs]
+                    moves = [moves[i] for i in idxs]
 
-                board.push(move)
+                for board_pos, move in zip(positions, moves):
+                    X.append(board_to_tensor(board_pos))
+                    idx = encode_move_index(board_pos, move)
+                    y.append(idx)
 
-            # Limit positions per game to control dataset size
-            if len(positions) > max_positions_per_game:
-                idxs = np.linspace(0, len(positions) - 1,
-                                   max_positions_per_game, dtype=int)
-                positions = [positions[i] for i in idxs]
-                moves = [moves[i] for i in idxs]
-
-            for board_pos, move in zip(positions, moves):
-                # Board -> tensor
-                X.append(board_to_tensor(board_pos))
-                # Move -> AlphaZero-style index (0..ACTION_SIZE-1)
-                idx = encode_move_index(board_pos, move)
-                y.append(idx)
+            except Exception as e:
+                print(f"Error processing game {game_count}: {e}")
+                continue
 
     X = np.stack(X) if X else np.empty((0, 12, 8, 8), dtype=np.float32)
     y = np.array(y, dtype=np.int64)
@@ -151,9 +126,9 @@ def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
     train_end = int(n * train_ratio)
     val_end = int(n * (train_ratio + val_ratio))
 
-    train_idx = indices[:train_end]          # 60% training
-    val_idx = indices[train_end:val_end]     # 20% validation
-    test_idx = indices[val_end:]             # 20% testing
+    train_idx = indices[:train_end]
+    val_idx = indices[train_end:val_end]
+    test_idx = indices[val_end:]
 
     return (
         X[train_idx], y[train_idx],
@@ -168,36 +143,11 @@ def train_val_test_split(X, y, train_ratio=0.6, val_ratio=0.2, seed=42):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--pgn",
-        type=str,
-        required=True,
-        help="Path to PGN file (e.g. data/raw/lichess/lichess_db_standard_rated_2025-01.pgn)",
-    )
-    parser.add_argument(
-        "--max_games",
-        type=int,
-        default=20000,
-        help="Max number of games to parse (None = all)",
-    )
-    parser.add_argument(
-        "--max_positions_per_game",
-        type=int,
-        default=30,
-        help="Max positions to extract per game",
-    )
-    parser.add_argument(
-        "--sample_every_n_moves",
-        type=int,
-        default=1,
-        help="Take every Nth move from each game (1 = all moves)",
-    )
-    parser.add_argument(
-        "--out_dir",
-        type=str,
-        default="data/processed",
-        help="Directory to save npz files",
-    )
+    parser.add_argument("--pgn", type=str, required=True)
+    parser.add_argument("--max_games", type=int, default=20000)
+    parser.add_argument("--max_positions_per_game", type=int, default=30)
+    parser.add_argument("--sample_every_n_moves", type=int, default=1)
+    parser.add_argument("--out_dir", type=str, default="data/processed")
     args = parser.parse_args()
 
     pgn_path = Path(args.pgn)
