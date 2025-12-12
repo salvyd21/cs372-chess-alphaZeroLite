@@ -17,7 +17,7 @@ class NNetWrapper(NeuralNet):
             'dropout': 0.3,
             'l2': 0.0001,
             'epochs': 10,
-            'batch_size': 64,
+            'batch_size': 128,
             'cuda': torch.cuda.is_available(),
             'num_channels': 128,
             'num_res_blocks': 5
