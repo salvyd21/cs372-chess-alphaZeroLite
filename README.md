@@ -96,7 +96,7 @@ Located in `src/eval/`:
 
 ## Video Links
 - Demo Video:(https://youtu.be/FOa4rxtIB4I)
-- Technical Walkthrough: TBA
+- [Technical Walkthrough](videos/TechnicalWalkthroughCS372.mp4)
 
 ## Attribution
 See [attribution.md](attribution.md) for data sources, libraries, and external code credits.
