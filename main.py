@@ -13,7 +13,8 @@ from src.chess_engine.action_encoding import ACTION_SIZE
 
 class Args:
     # --- training hyperparameters ---
-    batch_size = 256
+    batch_size = 128
+    lr = 0.001
     epochs = 10
     num_workers = 4
 
