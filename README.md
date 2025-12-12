@@ -95,7 +95,7 @@ Located in `src/eval/`:
 - Training/validation loss curves
 
 ## Video Links
-- Demo Video: TBA
+- Demo Video:(https://youtu.be/FOa4rxtIB4I)
 - Technical Walkthrough: TBA
 
 ## Attribution
