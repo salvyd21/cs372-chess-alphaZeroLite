@@ -102,5 +102,5 @@ Located in `src/eval/`:
 See [attribution.md](attribution.md) for data sources, libraries, and external code credits.
 
 ## Individual Contributions
-- **Partner Daniel**: Project setup, baseline models procurement, data collection, dataset processing, model architecture, Gym API environment framework, evaluation setup/framework/visualization, and repository organization
-- **Partner Thatcher**: Model architecture, setting up neural network and wrapper, processing and transforming the data set, setting up and training the model, testing and evaluateing model, demo video, 
+- **Partner Daniel**: Project setup, baseline models procurement, data collection, dataset processing, model architecture, Gym API environment framework, evaluation setup/framework/visualization,  repository organization, technical walkthrough.
+- **Partner Thatcher**: Model architecture, setting up neural network and wrapper, processing and transforming the data set, setting up and training the model, testing and evaluating the model, demo video.
